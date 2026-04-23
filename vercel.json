@@ -1,35 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/generate.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.(png|jpg|jpeg|gif|ico|svg|css|js)",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "assets/**",
-      "use": "@vercel/static"
-    }
-  ],
+  "cleanUrls": true,
   "images": {
-    "sizes": [
-      256,
-      512,
-      1024
-    ],
-    "domains": [],
-    "minimumCacheTTL": 60,
-    "formats": [
-      "image/avif",
-      "image/webp"
-    ]
-  },
-  "cleanUrls": true
+    "sizes": [256, 512, 1024],
+    "formats": ["image/avif", "image/webp"]
+  }
 }
