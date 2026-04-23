@@ -55,10 +55,8 @@
     <div id="login-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-2xl transition-all duration-700 opacity-0 pointer-events-none">
         <div class="w-full max-w-md p-10 bg-white/90 dark:bg-zinc-900/90 rounded-[3rem] shadow-2xl border border-white/20 dark:border-white/5 transform scale-90 transition-all duration-700">
             <div class="text-center mb-10">
-                <div class="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-lime-400/20 text-lime-500 mb-6 float-animation">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
+                <div class="inline-flex items-center justify-center w-24 h-24 rounded-[2rem] bg-white/10 dark:bg-zinc-800/50 mb-6 float-animation overflow-hidden shadow-2xl border border-white/10">
+                    <img src="MyIcon.png" alt="Logo" class="w-full h-full object-cover">
                 </div>
                 <h2 class="text-3xl font-playfair font-black text-gray-900 dark:text-white">Protected</h2>
                 <p class="text-gray-500 dark:text-zinc-400 mt-3 text-sm tracking-wide font-mono">ENCRYPTED PROJECT CHANNEL</p>
@@ -79,18 +77,26 @@
         </div>
     </div>
 
-    <!-- Theme Toggle -->
-    <div class="fixed top-8 right-8 z-50">
-        <button id="theme-toggle" class="w-12 h-12 rounded-2xl glass border border-gray-200 dark:border-white/10 flex items-center justify-center hover:scale-110 transition-transform">
+    <!-- Header Actions -->
+    <div class="fixed top-8 left-8 right-8 z-50 flex justify-between items-center pointer-events-none">
+        <div class="flex items-center gap-4 pointer-events-auto group">
+            <div class="w-12 h-12 rounded-2xl glass border border-gray-200 dark:border-white/10 flex items-center justify-center overflow-hidden transition-all duration-500 hover:scale-110 shadow-lg">
+                <img src="MyIcon.png" alt="Logo" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+            </div>
+            <span class="text-[10px] font-mono font-bold tracking-[0.3em] text-gray-400 dark:text-zinc-500 hidden sm:block">AB LABS</span>
+        </div>
+        <button id="theme-toggle" class="w-12 h-12 rounded-2xl glass border border-gray-200 dark:border-white/10 flex items-center justify-center hover:scale-110 transition-transform pointer-events-auto">
             <span id="theme-toggle-icon" class="text-xl">🌙</span>
         </button>
     </div>
 
     <div class="w-full max-w-2xl mt-12 md:mt-24">
         <header class="mb-16 text-center">
-            <h1 class="text-5xl md:text-7xl font-playfair font-black tracking-tight text-gray-900 dark:text-white leading-none">
-                Vision<span class="text-lime-400">.</span>Gen
-            </h1>
+            <div class="flex flex-col items-center gap-6 mb-2">
+                <h1 class="text-5xl md:text-7xl font-playfair font-black tracking-tight text-gray-900 dark:text-white leading-none">
+                    Vision<span class="text-lime-400">.</span>Gen
+                </h1>
+            </div>
             <p class="text-sm font-mono text-gray-400 dark:text-zinc-500 mt-6 uppercase tracking-[0.3em]">AI-Powered Visual Synthesis</p>
         </header>
 
