@@ -10,8 +10,26 @@
       "use": "@vercel/static"
     },
     {
+      "src": "*.(png|jpg|jpeg|gif|ico|svg|css|js)",
+      "use": "@vercel/static"
+    },
+    {
       "src": "assets/**",
       "use": "@vercel/static"
     }
-  ]
+  ],
+  "images": {
+    "sizes": [
+      256,
+      512,
+      1024
+    ],
+    "domains": [],
+    "minimumCacheTTL": 60,
+    "formats": [
+      "image/avif",
+      "image/webp"
+    ]
+  },
+  "cleanUrls": true
 }
