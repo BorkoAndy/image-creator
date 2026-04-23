@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator | Premium Creation</title>
+    <meta name="description" content="Generate high-quality images from text using AI.">
+    
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#c8f04a',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap');
+        
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .font-mono { font-family: 'DM Mono', monospace; }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        .dark .glass {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+
+<body class="bg-[#fafafa] text-gray-900 dark:bg-[#0a0a0a] dark:text-gray-100 min-h-screen flex flex-col items-center p-4 transition-colors duration-500">
+    
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-2xl transition-all duration-700 opacity-0 pointer-events-none">
+        <div class="w-full max-w-md p-10 bg-white/90 dark:bg-zinc-900/90 rounded-[3rem] shadow-2xl border border-white/20 dark:border-white/5 transform scale-90 transition-all duration-700">
+            <div class="text-center mb-10">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-lime-400/20 text-lime-500 mb-6 float-animation">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-playfair font-black text-gray-900 dark:text-white">Protected</h2>
+                <p class="text-gray-500 dark:text-zinc-400 mt-3 text-sm tracking-wide font-mono">ENCRYPTED PROJECT CHANNEL</p>
+            </div>
+            
+            <form id="login-form" class="space-y-8">
+                <div class="space-y-3">
+                    <label for="login-password" class="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-[0.2em] pl-1">Project Key</label>
+                    <input type="password" id="login-password" 
+                           class="w-full h-16 rounded-2xl bg-gray-100 dark:bg-zinc-800/50 border border-transparent focus:border-lime-500/50 focus:ring-8 focus:ring-lime-500/10 outline-none transition-all text-center text-2xl tracking-[0.5em] font-mono"
+                           placeholder="••••" required />
+                </div>
+                <button type="submit" class="w-full py-5 px-6 bg-lime-400 hover:bg-lime-500 text-black font-black rounded-2xl shadow-2xl shadow-lime-500/30 transform active:scale-[0.97] transition-all uppercase tracking-widest text-sm">
+                    Unlock Portal
+                </button>
+            </form>
+            <p id="login-error" class="text-red-500 text-center mt-6 text-xs font-mono hidden">INVALID ACCESS KEY</p>
+        </div>
+    </div>
+
+    <!-- Theme Toggle -->
+    <div class="fixed top-8 right-8 z-50">
+        <button id="theme-toggle" class="w-12 h-12 rounded-2xl glass border border-gray-200 dark:border-white/10 flex items-center justify-center hover:scale-110 transition-transform">
+            <span id="theme-toggle-icon" class="text-xl">🌙</span>
+        </button>
+    </div>
+
+    <div class="w-full max-w-2xl mt-12 md:mt-24">
+        <header class="mb-16 text-center">
+            <h1 class="text-5xl md:text-7xl font-playfair font-black tracking-tight text-gray-900 dark:text-white leading-none">
+                Vision<span class="text-lime-400">.</span>Gen
+            </h1>
+            <p class="text-sm font-mono text-gray-400 dark:text-zinc-500 mt-6 uppercase tracking-[0.3em]">AI-Powered Visual Synthesis</p>
+        </header>
+
+        <div class="space-y-10">
+            <div class="card p-1 glass border border-gray-200 dark:border-white/5 rounded-[2.5rem] shadow-sm">
+                <div class="p-8 space-y-8">
+                    <div class="form-group">
+                        <label for="prompt-input" class="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-4 pl-1">Creative Prompt</label>
+                        <textarea id="prompt-input" rows="4"
+                               class="w-full p-6 rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 focus:ring-4 focus:ring-lime-500/20 focus:border-lime-500/50 outline-none transition-all text-lg font-mono placeholder:text-gray-300 dark:placeholder:text-zinc-700"
+                               placeholder="A futuristic city in the clouds, cyberpunk style..." required></textarea>
+                        <div class="flex justify-end mt-2">
+                            <span id="char-count" class="text-[10px] font-mono text-zinc-500">0 / 500</span>
+                        </div>
+                    </div>
+
+                    <!-- Verification Section -->
+                    <div id="verification-container" class="space-y-4">
+                        <div id="slider-track" class="relative w-full h-20 bg-gray-100 dark:bg-zinc-900 rounded-full border border-gray-200 dark:border-white/5 flex items-center px-1.5 overflow-hidden transition-all duration-500">
+                            <div id="slider-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-[0.2em] pointer-events-none select-none transition-opacity">
+                                Slide to Generate
+                            </div>
+                            <div id="slider-handle" class="relative z-10 w-16 h-16 bg-lime-400 rounded-full flex items-center justify-center shadow-xl shadow-lime-500/20 transition-transform hover:scale-105 cursor-grab active:cursor-grabbing group">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-black transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="error-display" class="hidden p-6 rounded-3xl bg-red-500/5 dark:bg-red-500/10 text-red-500 dark:text-red-400 border border-red-500/20 text-xs font-mono text-center"></div>
+
+                    <div id="loading" class="hidden">
+                        <div class="flex flex-col items-center space-y-4 py-8">
+                            <div class="w-12 h-12 border-2 border-lime-400 border-t-transparent rounded-full animate-spin"></div>
+                            <p class="text-[10px] font-bold text-lime-400 uppercase tracking-widest animate-pulse">Synthesizing Vision</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Section -->
+            <div id="result-area" class="hidden space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                <div class="relative group">
+                    <div class="absolute -inset-4 bg-lime-400/10 blur-2xl rounded-[3.5rem] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative glass border border-gray-200 dark:border-white/10 rounded-[3rem] overflow-hidden">
+                        <img id="result-img" src="" alt="Generated Visual" class="w-full h-auto" />
+                        
+                        <div class="absolute top-6 right-6 flex gap-3">
+                            <div class="px-4 py-2 glass border border-white/20 rounded-full text-[10px] font-bold text-white uppercase tracking-tighter backdrop-blur-md">
+                                Model: <span id="model-badge" class="text-lime-400">Stable Diffusion</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center gap-4">
+                    <button id="btn-download" class="px-8 py-4 glass border border-gray-200 dark:border-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-white dark:hover:bg-zinc-800 transition-all">Download PNG</button>
+                    <button id="btn-reset" class="px-8 py-4 glass border border-gray-200 dark:border-white/10 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:border-lime-400 hover:text-lime-400 transition-all">New Prompt</button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-24 pb-12 text-center">
+            <p class="text-[9px] font-mono text-zinc-500 uppercase tracking-[0.4em] opacity-50">&copy; 2026 Vision Labs. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+
+</html>

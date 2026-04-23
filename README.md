@@ -57,7 +57,8 @@ Go to your project → **Settings** → **Environment Variables** and add:
 | `CLOUDFLARE_ACCOUNT_ID` | your CF account ID |
 | `CLOUDFLARE_API_TOKEN` | your CF API token |
 | `HF_API_TOKEN` | your Hugging Face token |
-| `API_SECRET` | any password you choose (e.g. `mySecret123`) |
+| `APP_PASSWORD` | your primary password (recommended) |
+| `API_SECRET` | legacy password (fallback) |
 
 ---
 

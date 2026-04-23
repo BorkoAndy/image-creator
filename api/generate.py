@@ -8,7 +8,7 @@ import asyncio
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from services import cloudflare, huggingface
 
-API_SECRET = os.environ.get("API_SECRET", "changeme")
+API_SECRET = os.environ.get("APP_PASSWORD", os.environ.get("API_SECRET", "Kx9#mP2vN$qL8@wR5yT!"))
 
 
 def run_async(coro):
