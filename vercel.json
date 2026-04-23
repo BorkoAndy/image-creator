@@ -6,16 +6,18 @@
       "use": "@vercel/python"
     },
     {
-      "src": "*.html",
+      "src": "**",
       "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/generate.py"
     },
     {
-      "src": "*.(png|jpg|jpeg|gif|ico|svg|css|js)",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "assets/**",
-      "use": "@vercel/static"
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ],
   "images": {
