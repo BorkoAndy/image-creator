@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,7 +20,11 @@
       --success: #4dff91;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       background: var(--bg);
@@ -46,7 +51,9 @@
       letter-spacing: -0.02em;
     }
 
-    header h1 span { color: var(--accent); }
+    header h1 span {
+      color: var(--accent);
+    }
 
     header p {
       margin-top: 10px;
@@ -90,7 +97,9 @@
       outline: none;
     }
 
-    textarea:focus { border-color: var(--accent); }
+    textarea:focus {
+      border-color: var(--accent);
+    }
 
     .char-count {
       text-align: right;
@@ -99,7 +108,9 @@
       margin-top: 4px;
     }
 
-    .char-count.warn { color: var(--danger); }
+    .char-count.warn {
+      color: var(--danger);
+    }
 
     button {
       font-family: 'DM Mono', monospace;
@@ -113,8 +124,14 @@
       transition: opacity 0.15s, transform 0.1s;
     }
 
-    button:active { transform: scale(0.98); }
-    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
 
     #btn-generate {
       background: var(--accent);
@@ -124,7 +141,9 @@
       margin-top: 18px;
     }
 
-    #btn-generate:hover:not(:disabled) { background: var(--accent-dim); }
+    #btn-generate:hover:not(:disabled) {
+      background: var(--accent-dim);
+    }
 
     .status-bar {
       font-size: 0.75rem;
@@ -137,19 +156,29 @@
     }
 
     .dot {
-      width: 7px; height: 7px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: var(--muted);
       animation: pulse 1s ease-in-out infinite;
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.2; }
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.2;
+      }
     }
 
     /* Result area */
-    #result-area { display: none; }
+    #result-area {
+      display: none;
+    }
 
     #result-area .model-badge {
       font-size: 0.68rem;
@@ -190,8 +219,13 @@
       flex: 1;
     }
 
-    #btn-approve:hover:not(:disabled) { opacity: 0.85; }
-    #btn-reject:hover:not(:disabled) { background: rgba(255,77,77,0.1); }
+    #btn-approve:hover:not(:disabled) {
+      opacity: 0.85;
+    }
+
+    #btn-reject:hover:not(:disabled) {
+      background: rgba(255, 77, 77, 0.1);
+    }
 
     .save-status {
       margin-top: 12px;
@@ -199,13 +233,18 @@
       min-height: 18px;
     }
 
-    .save-status.ok { color: var(--success); }
-    .save-status.err { color: var(--danger); }
+    .save-status.ok {
+      color: var(--success);
+    }
+
+    .save-status.err {
+      color: var(--danger);
+    }
 
     /* Error box */
     #error-box {
       display: none;
-      background: rgba(255,77,77,0.08);
+      background: rgba(255, 77, 77, 0.08);
       border: 1px solid var(--danger);
       border-radius: 3px;
       padding: 12px 16px;
@@ -216,167 +255,176 @@
     }
   </style>
 </head>
+
 <body>
 
-<header>
-  <h1>Image<span>.</span>Gen</h1>
-  <p>Cloudflare Workers AI · Hugging Face fallback</p>
-</header>
+  <header>
+    <h1>Image<span>.</span>Gen</h1>
+    <p>Cloudflare Workers AI · Hugging Face fallback</p>
+  </header>
 
-<div class="card">
-  <label for="prompt">Prompt</label>
-  <textarea id="prompt" placeholder="A cinematic photo of a fox in a misty forest at golden hour..." maxlength="500"></textarea>
-  <div class="char-count"><span id="char-num">0</span> / 500</div>
+  <div class="card">
+    <label for="prompt">Prompt</label>
+    <textarea id="prompt" placeholder="A cinematic photo of a fox in a misty forest at golden hour..." maxlength="500"></textarea>
+    <div class="char-count"><span id="char-num">0</span> / 500</div>
 
-  <button id="btn-generate">Generate Image</button>
+    <button id="btn-generate">Generate Image</button>
 
-  <div class="status-bar" id="status-bar"></div>
-  <div id="error-box"></div>
-</div>
-
-<div class="card" id="result-area">
-  <div class="model-badge">Generated via <span id="model-label">—</span></div>
-  <img id="preview-img" src="" alt="Generated image preview" />
-  <div class="action-row">
-    <button id="btn-approve">✓ Approve &amp; Save</button>
-    <button id="btn-reject">✕ Reject</button>
+    <div class="status-bar" id="status-bar"></div>
+    <div id="error-box"></div>
   </div>
-  <div class="save-status" id="save-status"></div>
-</div>
 
-<script>
-  // ── Config ────────────────────────────────────────────────────────────────
-  const VERCEL_API   = 'https://YOUR-PROJECT.vercel.app/api/generate'; // ← update this
-  const API_KEY      = 'Kx9#mP2vN$qL8@wR5yT!';                               // ← updated
+  <div class="card" id="result-area">
+    <div class="model-badge">Generated via <span id="model-label">—</span></div>
+    <img id="preview-img" src="" alt="Generated image preview" />
+    <div class="action-row">
+      <button id="btn-approve">✓ Approve &amp; Save</button>
+      <button id="btn-reject">✕ Reject</button>
+    </div>
+    <div class="save-status" id="save-status"></div>
+  </div>
 
-  // ── State ─────────────────────────────────────────────────────────────────
-  let currentBase64  = null;
-  let currentPrompt  = null;
+  <script>
+    // ── Config ────────────────────────────────────────────────────────────────
+    const VERCEL_API = 'https://andy-image-creator.vercel.app/api/generate'; // ← update this
+    const API_KEY = 'Kx9#mP2vN$qL8@wR5yT!'; // ← updated
 
-  // ── Elements ──────────────────────────────────────────────────────────────
-  const promptEl     = document.getElementById('prompt');
-  const charNum      = document.getElementById('char-num');
-  const btnGenerate  = document.getElementById('btn-generate');
-  const statusBar    = document.getElementById('status-bar');
-  const errorBox     = document.getElementById('error-box');
-  const resultArea   = document.getElementById('result-area');
-  const previewImg   = document.getElementById('preview-img');
-  const modelLabel   = document.getElementById('model-label');
-  const btnApprove   = document.getElementById('btn-approve');
-  const btnReject    = document.getElementById('btn-reject');
-  const saveStatus   = document.getElementById('save-status');
+    // ── State ─────────────────────────────────────────────────────────────────
+    let currentBase64 = null;
+    let currentPrompt = null;
 
-  // ── Char counter ──────────────────────────────────────────────────────────
-  promptEl.addEventListener('input', () => {
-    const len = promptEl.value.length;
-    charNum.textContent = len;
-    charNum.parentElement.classList.toggle('warn', len > 450);
-  });
+    // ── Elements ──────────────────────────────────────────────────────────────
+    const promptEl = document.getElementById('prompt');
+    const charNum = document.getElementById('char-num');
+    const btnGenerate = document.getElementById('btn-generate');
+    const statusBar = document.getElementById('status-bar');
+    const errorBox = document.getElementById('error-box');
+    const resultArea = document.getElementById('result-area');
+    const previewImg = document.getElementById('preview-img');
+    const modelLabel = document.getElementById('model-label');
+    const btnApprove = document.getElementById('btn-approve');
+    const btnReject = document.getElementById('btn-reject');
+    const saveStatus = document.getElementById('save-status');
 
-  // ── Generate ──────────────────────────────────────────────────────────────
-  btnGenerate.addEventListener('click', async () => {
-    const prompt = promptEl.value.trim();
-    if (!prompt) return setStatus('Please enter a prompt.', true);
+    // ── Char counter ──────────────────────────────────────────────────────────
+    promptEl.addEventListener('input', () => {
+      const len = promptEl.value.length;
+      charNum.textContent = len;
+      charNum.parentElement.classList.toggle('warn', len > 450);
+    });
 
-    // Reset UI
-    setError('');
-    setStatus('', false);
-    resultArea.style.display = 'none';
-    saveStatus.textContent = '';
-    currentBase64 = null;
-    btnGenerate.disabled = true;
+    // ── Generate ──────────────────────────────────────────────────────────────
+    btnGenerate.addEventListener('click', async () => {
+      const prompt = promptEl.value.trim();
+      if (!prompt) return setStatus('Please enter a prompt.', true);
 
-    setStatus('Connecting to Cloudflare…', false, true);
+      // Reset UI
+      setError('');
+      setStatus('', false);
+      resultArea.style.display = 'none';
+      saveStatus.textContent = '';
+      currentBase64 = null;
+      btnGenerate.disabled = true;
 
-    try {
-      const res = await fetch(VERCEL_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, api_key: API_KEY }),
-      });
+      setStatus('Connecting to Cloudflare…', false, true);
 
-      const data = await res.json();
+      try {
+        const res = await fetch(VERCEL_API, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            prompt,
+            api_key: API_KEY
+          }),
+        });
 
-      if (!res.ok || data.status !== 'ok') {
-        throw new Error(data.message || `Server error ${res.status}`);
+        const data = await res.json();
+
+        if (!res.ok || data.status !== 'ok') {
+          throw new Error(data.message || `Server error ${res.status}`);
+        }
+
+        currentBase64 = data.image;
+        currentPrompt = prompt;
+
+        previewImg.src = `data:${data.mime_type};base64,${data.image}`;
+        modelLabel.textContent = data.model_used === 'cloudflare' ?
+          'Cloudflare Workers AI (SDXL Lightning)' :
+          'Hugging Face (SDXL)';
+
+        resultArea.style.display = 'block';
+        setStatus('Done. Review the image below.', false);
+
+      } catch (err) {
+        setError(err.message);
+        setStatus('Generation failed.', true);
+      } finally {
+        btnGenerate.disabled = false;
       }
+    });
 
-      currentBase64 = data.image;
-      currentPrompt = prompt;
+    // ── Approve → send to save.php ─────────────────────────────────────────
+    btnApprove.addEventListener('click', async () => {
+      if (!currentBase64) return;
 
-      previewImg.src = `data:${data.mime_type};base64,${data.image}`;
-      modelLabel.textContent = data.model_used === 'cloudflare'
-        ? 'Cloudflare Workers AI (SDXL Lightning)'
-        : 'Hugging Face (SDXL)';
+      btnApprove.disabled = true;
+      btnReject.disabled = true;
+      saveStatus.className = 'save-status';
+      saveStatus.textContent = 'Saving…';
 
-      resultArea.style.display = 'block';
-      setStatus('Done. Review the image below.', false);
+      try {
+        const res = await fetch('save.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            image: currentBase64,
+            prompt: currentPrompt,
+          }),
+        });
 
-    } catch (err) {
-      setError(err.message);
-      setStatus('Generation failed.', true);
-    } finally {
-      btnGenerate.disabled = false;
-    }
-  });
+        const data = await res.json();
 
-  // ── Approve → send to save.php ─────────────────────────────────────────
-  btnApprove.addEventListener('click', async () => {
-    if (!currentBase64) return;
-
-    btnApprove.disabled = true;
-    btnReject.disabled  = true;
-    saveStatus.className = 'save-status';
-    saveStatus.textContent = 'Saving…';
-
-    try {
-      const res = await fetch('save.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image: currentBase64,
-          prompt: currentPrompt,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.status === 'ok') {
-        saveStatus.className = 'save-status ok';
-        saveStatus.textContent = `✓ Saved: ${data.filename}`;
-      } else {
-        throw new Error(data.message || 'Save failed');
+        if (data.status === 'ok') {
+          saveStatus.className = 'save-status ok';
+          saveStatus.textContent = `✓ Saved: ${data.filename}`;
+        } else {
+          throw new Error(data.message || 'Save failed');
+        }
+      } catch (err) {
+        saveStatus.className = 'save-status err';
+        saveStatus.textContent = `✕ ${err.message}`;
+      } finally {
+        btnApprove.disabled = false;
+        btnReject.disabled = false;
       }
-    } catch (err) {
-      saveStatus.className = 'save-status err';
-      saveStatus.textContent = `✕ ${err.message}`;
-    } finally {
-      btnApprove.disabled = false;
-      btnReject.disabled  = false;
+    });
+
+    // ── Reject → hide result ───────────────────────────────────────────────
+    btnReject.addEventListener('click', () => {
+      resultArea.style.display = 'none';
+      currentBase64 = null;
+      saveStatus.textContent = '';
+      setStatus('Image rejected. Enter a new prompt.', false);
+    });
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function setStatus(msg, isErr, loading = false) {
+      statusBar.innerHTML = msg ?
+        (loading ? `<div class="dot"></div>${msg}` : msg) :
+        '';
+      statusBar.style.color = isErr ? 'var(--danger)' : 'var(--muted)';
     }
-  });
 
-  // ── Reject → hide result ───────────────────────────────────────────────
-  btnReject.addEventListener('click', () => {
-    resultArea.style.display = 'none';
-    currentBase64 = null;
-    saveStatus.textContent = '';
-    setStatus('Image rejected. Enter a new prompt.', false);
-  });
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  function setStatus(msg, isErr, loading = false) {
-    statusBar.innerHTML = msg
-      ? (loading ? `<div class="dot"></div>${msg}` : msg)
-      : '';
-    statusBar.style.color = isErr ? 'var(--danger)' : 'var(--muted)';
-  }
-
-  function setError(msg) {
-    errorBox.style.display = msg ? 'block' : 'none';
-    errorBox.textContent = msg;
-  }
-</script>
+    function setError(msg) {
+      errorBox.style.display = msg ? 'block' : 'none';
+      errorBox.textContent = msg;
+    }
+  </script>
 
 </body>
+
 </html>
