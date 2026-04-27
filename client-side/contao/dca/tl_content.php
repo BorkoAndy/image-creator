@@ -38,7 +38,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'ai_save_image') {
     $imageBytes = base64_decode($base64);
 
     // Prepare path
-    $folder = 'files/ai-generated';
+    $folder = 'files';
     if (!is_dir(System::getContainer()->getParameter('kernel.project_dir') . '/' . $folder)) {
         mkdir(System::getContainer()->getParameter('kernel.project_dir') . '/' . $folder, 0755, true);
     }
