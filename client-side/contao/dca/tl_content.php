@@ -25,7 +25,7 @@ use Contao\StringUtil;
 if (isset($_GET['action']) && $_GET['action'] === 'ai_save_image') {
     $container = System::getContainer();
     $request = $container->get('request_stack')->getCurrentRequest() ?? Request::createFromGlobals();
-    
+
     // Parse body
     $data = json_decode($request->getContent(), true);
     if (!$data || empty($data['image'])) {
@@ -38,7 +38,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'ai_save_image') {
     $imageBytes = base64_decode($base64);
 
     // Prepare path
-    $folder = 'files';
+    $folder = 'files/ai-generated';
     if (!is_dir(System::getContainer()->getParameter('kernel.project_dir') . '/' . $folder)) {
         mkdir(System::getContainer()->getParameter('kernel.project_dir') . '/' . $folder, 0755, true);
     }
