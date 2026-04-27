@@ -21,45 +21,55 @@ use Contao\StringUtil;
 
 /**
  * AJAX Handler for saving the AI image directly into Contao's DBAFS
+ * We check this early to avoid rendering the rest of the backend page.
  */
 if (isset($_GET['action']) && $_GET['action'] === 'ai_save_image') {
-    $container = System::getContainer();
-    $request = $container->get('request_stack')->getCurrentRequest() ?? Request::createFromGlobals();
+    // Ensure we don't have any previous output (buffer cleanup)
+    while (ob_get_level()) ob_end_clean();
+    header('Content-Type: application/json');
 
-    // Parse body
-    $data = json_decode($request->getContent(), true);
-    if (!$data || empty($data['image'])) {
-        (new JsonResponse(['status' => 'error', 'message' => 'Missing image data']))->send();
-        exit;
+    try {
+        $container = System::getContainer();
+        $request = $container->get('request_stack')->getCurrentRequest() ?? Request::createFromGlobals();
+        
+        // Parse body
+        $data = json_decode($request->getContent(), true);
+        if (!$data || empty($data['image'])) {
+            echo json_encode(['status' => 'error', 'message' => 'Missing image data']);
+            exit;
+        }
+
+        $base64 = $data['image'];
+        $prompt = isset($data['prompt']) ? substr($data['prompt'], 0, 100) : 'unknown';
+        $imageBytes = base64_decode($base64);
+
+        // Prepare path - Saving to /files/ai-generated/ for grouping
+        $folder = 'files/ai-generated';
+        $projectDir = $container->getParameter('kernel.project_dir');
+        
+        if (!is_dir($projectDir . '/' . $folder)) {
+            mkdir($projectDir . '/' . $folder, 0755, true);
+        }
+
+        $alias = StringUtil::generateAlias($prompt);
+        $filename = date('Ymd_His') . '_' . ($alias ?: 'ai-image') . '.png';
+        $path = $folder . '/' . $filename;
+
+        // Save file using native PHP for maximum reliability
+        file_put_contents($projectDir . '/' . $path, $imageBytes);
+
+        // Register in DBAFS to get a UUID
+        $model = Dbafs::addResource($path);
+
+        echo json_encode([
+            'status' => 'ok',
+            'path'   => $path,
+            'uuid'   => StringUtil::binToUuid($model->uuid),
+            'filename' => $filename
+        ]);
+    } catch (\Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
     }
-
-    $base64 = $data['image'];
-    $prompt = isset($data['prompt']) ? substr($data['prompt'], 0, 100) : 'unknown';
-    $imageBytes = base64_decode($base64);
-
-    // Prepare path
-    $folder = 'files/ai-generated';
-    if (!is_dir(System::getContainer()->getParameter('kernel.project_dir') . '/' . $folder)) {
-        mkdir(System::getContainer()->getParameter('kernel.project_dir') . '/' . $folder, 0755, true);
-    }
-
-    $filename = date('Ymd_His') . '_' . StringUtil::generateAlias($prompt) . '.png';
-    $path = $folder . '/' . $filename;
-
-    // Save file
-    $file = new File($path);
-    $file->write($imageBytes);
-    $file->close();
-
-    // Register in DBAFS to get a UUID
-    $model = Dbafs::addResource($path);
-
-    (new JsonResponse([
-        'status' => 'ok',
-        'path'   => $path,
-        'uuid'   => StringUtil::binToUuid($model->uuid),
-        'filename' => $filename
-    ]))->send();
     exit;
 }
 
