@@ -1,14 +1,15 @@
 /**
- * Contao AI Image Generator - Placeholder Version
- * Hosted on Vercel
+ * Contao AI Image Generator - V3.0
+ * Finds and injects button next to "Change selection"
  */
 
 (function () {
     'use strict';
 
+    console.log('Contao Alt Generator Loaded (V3.0)');
     console.log('AI Image Generator loaded from Vercel!');
 
-    // Initialize when DOM is ready
+    // Initialize
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
@@ -16,26 +17,64 @@
     }
 
     function init() {
-        setupAiButton();
-        // Retry setup in case button loads dynamically
-        setTimeout(setupAiButton, 500);
-        setTimeout(setupAiButton, 1500);
+        injectAiButton();
+        // Retry multiple times as Contao loads content dynamically
+        setTimeout(injectAiButton, 500);
+        setTimeout(injectAiButton, 1000);
+        setTimeout(injectAiButton, 2000);
+
+        // Watch for DOM changes (when user navigates to image element)
+        const observer = new MutationObserver(function (mutations) {
+            injectAiButton();
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
     }
 
-    function setupAiButton() {
-        const button = document.getElementById('ai_generate_image_btn');
-        if (button && !button.dataset.aiInitialized) {
-            button.dataset.aiInitialized = 'true';
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                showPlaceholderModal();
-            });
-            console.log('AI Image Generator button initialized!');
+    function injectAiButton() {
+        // Find the "Change selection" button
+        const changeButton = document.getElementById('ft_singleSRC');
+
+        if (!changeButton) {
+            console.log('Change selection button not found yet');
+            return;
         }
+
+        // Check if we already added our button
+        if (document.getElementById('ai_generate_image_btn')) {
+            console.log('AI button already exists');
+            return;
+        }
+
+        console.log('Found change selection button, injecting AI button');
+
+        // Create our AI button
+        const aiButton = document.createElement('a');
+        aiButton.href = '#';
+        aiButton.id = 'ai_generate_image_btn';
+        aiButton.className = 'tl_submit';
+        aiButton.textContent = '🎨 Generate AI Image';
+        aiButton.style.cssText = 'background: #9c27b0 !important; color: white !important; margin-left: 10px;';
+
+        aiButton.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('AI Generate button clicked!');
+            showPlaceholderModal();
+        });
+
+        // Insert after the "Change selection" button
+        changeButton.parentNode.insertBefore(aiButton, changeButton.nextSibling);
+
+        console.log('AI button injected successfully!');
     }
 
     function showPlaceholderModal() {
+        console.log('Opening AI Image Generator modal');
+
         // Create placeholder modal
         const modal = document.createElement('div');
         modal.id = 'ai-image-generator-modal';
@@ -119,7 +158,7 @@
 
         // Close on overlay click
         modal.addEventListener('click', function (e) {
-            if (e.target === modal) {
+            if (e.target.style.position === 'fixed') {
                 modal.remove();
             }
         });
@@ -127,6 +166,7 @@
 
     // Make function globally available
     window.generatePlaceholderImage = function () {
+        console.log('Generate button clicked');
         const modal = document.getElementById('ai-image-generator-modal');
         const prompt = document.getElementById('ai-prompt-input').value.trim();
 
@@ -134,6 +174,8 @@
             alert('Please enter a description for the image');
             return;
         }
+
+        console.log('Generating image with prompt:', prompt);
 
         // Show loading
         modal.querySelector('div > div:nth-child(2)').innerHTML = `
@@ -165,8 +207,10 @@
     };
 
     function showGeneratedImage(modal, prompt) {
+        console.log('Showing generated image');
+
         // Create placeholder image URL
-        const placeholderUrl = `https://via.placeholder.com/1024x1024/9c27b0/ffffff?text=AI+Generated:+${encodeURIComponent(prompt.substring(0, 30))}`;
+        const placeholderUrl = `https://via.placeholder.com/1024x1024/9c27b0/ffffff?text=AI+Generated`;
 
         modal.querySelector('div > div:nth-child(2)').innerHTML = `
             <div style="padding: 24px;">
@@ -175,7 +219,7 @@
                 </div>
                 
                 <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                    <button onclick="document.getElementById('ai-image-generator-modal').remove(); showPlaceholderModal();" style="
+                    <button onclick="document.getElementById('ai-image-generator-modal').remove(); setTimeout(() => showPlaceholderModal(), 100);" style="
                         padding: 12px 24px;
                         background: #757575;
                         color: white;
@@ -186,7 +230,7 @@
                         cursor: pointer;
                     ">🔄 Re-create</button>
                     
-                    <button onclick="alert('Placeholder: Image would be saved to Contao here'); document.getElementById('ai-image-generator-modal').remove();" style="
+                    <button onclick="alert('✅ Placeholder: Image would be saved to Contao here\\n\\nPrompt: ${prompt.replace(/'/g, "\\'")}'); document.getElementById('ai-image-generator-modal').remove();" style="
                         padding: 12px 24px;
                         background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
                         color: white;
