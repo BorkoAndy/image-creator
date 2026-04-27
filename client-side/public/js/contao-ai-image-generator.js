@@ -9,7 +9,9 @@
     const VERSION = '4.0';
     const VERCEL_API = 'https://andy-image-creator.vercel.app/api/generate';
     const API_KEY = 'Kx9#mP2vN$qL8@wR5yT!';
-    const SAVE_URL = '/js/save.php'; // Updated to match your js/ folder preference
+    
+    // Dynamic Save URL that points back to the current Contao backend page
+    const SAVE_URL = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'action=ai_save_image';
 
     console.log(`Contao AI Image Generator Loaded (V${VERSION})`);
 
@@ -269,26 +271,77 @@
                 const data = await response.json();
                 if (data.status !== 'ok') throw new Error(data.message || 'Saving failed');
 
-                // Update Contao Field
-                const targetField = document.getElementById('ft_singleSRC');
-                if (targetField) {
-                    targetField.value = data.path;
+                // Update Contao Field & UI
+                const targetField = document.getElementById('ctrl_singleSRC') || document.getElementById('ft_singleSRC');
+                
+                if (targetField && data.uuid) {
+                    console.log('AI Generator: Updating Contao widget with UUID:', data.uuid);
                     
-                    // Trigger events so Contao knows something happened
-                    targetField.dispatchEvent(new Event('change', { bubbles: true }));
-                    targetField.dispatchEvent(new Event('input', { bubbles: true }));
+                    // 1. Set the hidden input value
+                    const inputField = document.getElementById('ctrl_singleSRC');
+                    if (inputField) inputField.value = data.uuid;
 
-                    // Update visible info label if it exists
-                    const container = targetField.closest('div');
-                    const infoLabel = container ? container.querySelector('.tl_help') : null;
-                    if (infoLabel) {
-                        infoLabel.style.color = '#c8f04a';
-                        infoLabel.innerHTML = `<strong>Selected:</strong> ${data.path}`;
+                    // 2. Trigger Contao's internal reloadFiletree to refresh the thumbnail/UI
+                    // We mimic exactly how Contao's native picker does it
+                    try {
+                        const token = (typeof Contao !== 'undefined' && Contao.request_token) || 
+                                      document.querySelector('input[name="REQUEST_TOKEN"]')?.value;
+                        
+                        const formData = new FormData();
+                        formData.append('action', 'reloadFiletree');
+                        formData.append('name', 'singleSRC');
+                        formData.append('value', data.uuid);
+                        if (token) formData.append('REQUEST_TOKEN', token);
+
+                        // Call the same URL as the current page but with POST
+                        const response = await fetch(window.location.href, {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+
+                        const responseText = await response.text();
+                        let htmlContent = '';
+
+                        try {
+                            // Try parsing as JSON first (standard for modern Contao)
+                            const json = JSON.parse(responseText);
+                            htmlContent = json.content || '';
+                            console.log('AI Generator: Received JSON response');
+                        } catch (e) {
+                            // Fallback: If it's raw HTML (some Contao versions/configs)
+                            htmlContent = responseText;
+                            console.log('AI Generator: Received raw HTML response');
+                        }
+
+                        if (htmlContent && htmlContent.includes('<div')) {
+                            // The target for replacement is the wrapper div of the input
+                            const selectorContainer = targetField.closest('.selector_container') || 
+                                                      targetField.closest('div[data-controller]') ||
+                                                      targetField.parentNode;
+                            
+                            if (selectorContainer) {
+                                selectorContainer.innerHTML = htmlContent;
+                                console.log('AI Generator: Widget UI reloaded');
+                                
+                                // Re-inject my button since the reload might have overwritten the HTML
+                                setTimeout(() => {
+                                    retryCount = 0;
+                                    tryInject();
+                                }, 150);
+                            }
+                        }
+                    } catch (ajaxErr) {
+                        console.error('AI Generator: Failed to reload filetree UI:', ajaxErr);
+                        // Fallback: manually update label if AJAX reload fails
+                        const infoLabel = targetField.parentNode.querySelector('.tl_help');
+                        if (infoLabel) infoLabel.innerHTML = `<strong>Selected:</strong> ${data.path}`;
                     }
                 }
 
                 close();
             } catch (err) {
+                console.error('AI Generator Error:', err);
                 showError('Error saving: ' + err.message);
                 btnApprove.disabled = false;
                 btnApprove.style.opacity = '1';
