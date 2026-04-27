@@ -207,8 +207,8 @@
         const btnGenerate = document.getElementById('ai-btn-generate');
         const promptInput = document.getElementById('ai-prompt-input');
         
-        btnGenerate.onclick = async () => {
-            const prompt = promptInput.value.trim();
+        // --- Generation Function ---
+        async function performGeneration(prompt) {
             if (!prompt) return showError('Please describe the image you want to create.');
             
             showView('loading');
@@ -235,24 +235,31 @@
                 showError(err.message);
                 showView('input');
             }
-        };
+        }
 
+        btnGenerate.onclick = () => performGeneration(promptInput.value.trim());
+
+        // --- Repeat Button ---
         document.getElementById('ai-btn-repeat').onclick = () => {
-            showView('input');
+            const previewImg = document.getElementById('ai-preview-img');
+            const prompt = previewImg.dataset.prompt;
+            performGeneration(prompt);
         };
 
+        // --- Approve Button ---
         document.getElementById('ai-btn-approve').onclick = async () => {
             const btnApprove = document.getElementById('ai-btn-approve');
             const previewImg = document.getElementById('ai-preview-img');
             const base64 = previewImg.dataset.base64;
             const prompt = previewImg.dataset.prompt;
 
+            if (!base64) return;
+
             btnApprove.disabled = true;
-            btnApprove.textContent = 'Saving...';
+            btnApprove.style.opacity = '0.5';
+            btnApprove.innerHTML = '<span>⏳</span> Saving...';
 
             try {
-                // Determine save.php path relative to current script
-                // We use a relative path if possible or the one defined at top
                 const response = await fetch(SAVE_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -265,24 +272,27 @@
                 // Update Contao Field
                 const targetField = document.getElementById('ft_singleSRC');
                 if (targetField) {
-                    targetField.value = data.path; // Set path
+                    targetField.value = data.path;
                     
-                    // Trigger change so Contao knows something happened
-                    const event = new Event('change', { bubbles: true });
-                    targetField.dispatchEvent(event);
+                    // Trigger events so Contao knows something happened
+                    targetField.dispatchEvent(new Event('change', { bubbles: true }));
+                    targetField.dispatchEvent(new Event('input', { bubbles: true }));
 
-                    // If there's a visible label/path display in Contao, try to update it too
+                    // Update visible info label if it exists
                     const container = targetField.closest('div');
                     const infoLabel = container ? container.querySelector('.tl_help') : null;
-                    if (infoLabel) infoLabel.innerHTML = `<strong>Selected:</strong> ${data.path}`;
+                    if (infoLabel) {
+                        infoLabel.style.color = '#c8f04a';
+                        infoLabel.innerHTML = `<strong>Selected:</strong> ${data.path}`;
+                    }
                 }
 
-                alert('✅ Image saved and added to the article!');
                 close();
             } catch (err) {
                 showError('Error saving: ' + err.message);
                 btnApprove.disabled = false;
-                btnApprove.textContent = '✅ Use Image';
+                btnApprove.style.opacity = '1';
+                btnApprove.innerHTML = '✅ Use Image';
             }
         };
     }
