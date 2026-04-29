@@ -21,34 +21,24 @@ async def generate(prompt: str, model_id: str = None) -> str:
     Returns base64-encoded PNG string.
     Raises Exception on failure.
     """
-    if not HF_API_TOKEN:
-        raise Exception("Hugging Face API token not configured")
-    
-    token = HF_API_TOKEN.strip()
-
-    target_model = model_id if model_id else HF_MODEL
-    url = f"https://api-inference.huggingface.co/models/{target_model}"
+    # Sanitize token and construct clean URL
+    token = HF_API_TOKEN.strip() if HF_API_TOKEN else ""
+    clean_model_id = (model_id if model_id else HF_MODEL).strip("/")
+    url = f"https://api-inference.huggingface.co/models/{clean_model_id}"
 
     headers = {
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
+        "X-Wait-For-Model": "true",
+        "X-Use-Cache": "true"
     }
 
-    # Default parameters
-    steps = 25
-    guidance = 7.5
-    
-    # Adjust for fast models
-    if any(m in target_model.lower() for m in ["turbo", "schnell", "lightning"]):
-        steps = 4
-        guidance = 0.0 if "schnell" in target_model.lower() else 1.5
+    # Force 4 steps for speed (to beat Vercel's 10s timeout)
+    steps = 4
+    guidance = 0.0 if "schnell" in clean_model_id.lower() else 1.5
 
     payload = {
         "inputs": prompt,
-        "options": {
-            "wait_for_model": True,
-            "use_cache": True,
-        },
         "parameters": {
             "num_inference_steps": steps,
             "guidance_scale": guidance,
@@ -58,16 +48,19 @@ async def generate(prompt: str, model_id: str = None) -> str:
     elapsed = 0
     async with httpx.AsyncClient(timeout=120.0) as client:
         while elapsed < MAX_WAIT_SECONDS:
-            response = await client.post(url, headers=headers, json=payload)
+            try:
+                response = await client.post(url, headers=headers, json=payload)
+            except Exception as e:
+                raise Exception(f"Connection error: {str(e)}")
 
             # Model still loading — wait and retry
             if response.status_code == 503:
                 try:
                     data = response.json()
-                    estimated = data.get("estimated_time", POLL_INTERVAL)
+                    estimated = data.get("estimated_time", 2) # shorter wait
                 except:
-                    estimated = POLL_INTERVAL
-                wait = min(float(estimated), POLL_INTERVAL)
+                    estimated = 2
+                wait = min(float(estimated), 2)
                 await asyncio.sleep(wait)
                 elapsed += wait
                 continue
@@ -78,7 +71,7 @@ async def generate(prompt: str, model_id: str = None) -> str:
                     error_msg = error_data.get("error", response.text)
                 except:
                     error_msg = response.text
-                raise Exception(f"Hugging Face API error {response.status_code}: {error_msg}")
+                raise Exception(f"HF Error {response.status_code}: {error_msg}")
 
             image_bytes = response.content
             if not image_bytes:
