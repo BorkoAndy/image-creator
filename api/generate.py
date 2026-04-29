@@ -56,15 +56,15 @@ class handler(BaseHTTPRequestHandler):
         error_hf = None
 
         try:
-            image_base64 = run_async(cloudflare.generate(prompt))
-            model_used = "cloudflare"
+            image_base64 = run_async(huggingface.generate(prompt))
+            model_used = "huggingface"              
         except Exception as e:
             error_cf = str(e)
 
         if image_base64 is None:
             try:
-                image_base64 = run_async(huggingface.generate(prompt))
-                model_used = "huggingface"
+                image_base64 = run_async(cloudflare.generate(prompt))
+                model_used = "cloudflare"
             except Exception as e:
                 error_hf = str(e)
 
