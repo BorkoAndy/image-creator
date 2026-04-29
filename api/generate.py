@@ -49,29 +49,29 @@ class handler(BaseHTTPRequestHandler):
         if len(prompt) > 500:
             return self._error(400, "Prompt too long (max 500 characters)")
 
-        # Try Hugging Face first (testing fallback), then Cloudflare
+        # Try Cloudflare first, fall back to Hugging Face
         image_base64 = None
         model_used = None
         error_cf = None
         error_hf = None
 
         try:
-            image_base64 = run_async(huggingface.generate(prompt))
-            model_used = "huggingface"
+            image_base64 = run_async(cloudflare.generate(prompt))
+            model_used = "cloudflare"
         except Exception as e:
-            error_hf = str(e)
+            error_cf = str(e)
 
         if image_base64 is None:
             try:
-                image_base64 = run_async(cloudflare.generate(prompt))
-                model_used = "cloudflare"
+                image_base64 = run_async(huggingface.generate(prompt))
+                model_used = "huggingface"
             except Exception as e:
-                error_cf = str(e)
+                error_hf = str(e)
 
         if image_base64 is None:
             return self._error(502, "Both generation services failed", {
-                "huggingface_error": error_hf,
                 "cloudflare_error": error_cf,
+                "huggingface_error": error_hf,
             })
 
         # Success
