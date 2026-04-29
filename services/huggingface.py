@@ -20,8 +20,8 @@ async def generate(prompt: str, model_id: str = None) -> str:
     
     token = HF_API_TOKEN.strip()
     target_model = (model_id if model_id else HF_MODEL).strip("/")
-    # Using the newer endpoint format which is often more reliable
-    url = f"https://huggingface.co/api/models/{target_model}/inference"
+    # Using the exact URL format suggested
+    url = f"https://api-inference.huggingface.co/models/{target_model}"
 
     headers = {
         "Authorization": f"Bearer {token}",
@@ -30,7 +30,9 @@ async def generate(prompt: str, model_id: str = None) -> str:
 
     payload = {
         "inputs": prompt,
-        "options": {"wait_for_model": True}
+        "parameters": {
+            "num_inference_steps": 4 # Crucial for Vercel's 10s timeout
+        }
     }
 
     async with httpx.AsyncClient(timeout=30.0) as client:
