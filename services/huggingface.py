@@ -23,12 +23,14 @@ async def generate(prompt: str, model_id: str = None) -> str:
     """
     if not HF_API_TOKEN:
         raise Exception("Hugging Face API token not configured")
+    
+    token = HF_API_TOKEN.strip()
 
     target_model = model_id if model_id else HF_MODEL
     url = f"https://api-inference.huggingface.co/models/{target_model}"
 
     headers = {
-        "Authorization": f"Bearer {HF_API_TOKEN}",
+        "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
 

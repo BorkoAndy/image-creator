@@ -214,12 +214,15 @@ async function generateImage() {
 
         if (res.ok && data.status === 'ok') {
             resultImg.src = `data:image/png;base64,${data.image}`;
-            modelBadge.textContent = data.model_used === 'cloudflare' ? 'Cloudflare SDXL' : 'Hugging Face SDXL';
+            modelBadge.textContent = data.model_used.includes('cloudflare') ? 'Cloudflare' : 'Hugging Face';
             
             loading.classList.add('hidden');
             resultArea.classList.remove('hidden');
         } else {
-            throw new Error(data.message || "Synthesis failed");
+            let errorMsg = data.message || "Synthesis failed";
+            if (data.huggingface_error) errorMsg += `: ${data.huggingface_error}`;
+            if (data.cloudflare_error) errorMsg += `: ${data.cloudflare_error}`;
+            throw new Error(errorMsg);
         }
     } catch (e) {
         showError(e.message);
