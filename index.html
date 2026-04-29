@@ -111,7 +111,16 @@
                         </div>
                     </div>
 
-                    <!-- Verification Section -->
+                    <div class="form-group">
+                        <label for="model-select" class="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-[0.2em] mb-4 pl-1">Engine Selection</label>
+                        <select id="model-select" 
+                                class="w-full p-6 rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 focus:ring-4 focus:ring-lime-500/20 focus:border-lime-500/50 outline-none transition-all text-sm font-mono appearance-none cursor-pointer">
+                            <option value="auto">Auto (Smart Fallback)</option>
+                            <option value="cloudflare">Cloudflare SDXL Lightning</option>
+                            <option value="huggingface">Hugging Face SDXL Base</option>
+                        </select>
+                    </div>
+
                     <div id="verification-container" class="space-y-4">
                         <div id="slider-track" class="relative w-full h-20 bg-gray-100 dark:bg-zinc-900 rounded-full border border-gray-200 dark:border-white/5 flex items-center px-1.5 overflow-hidden transition-all duration-500">
                             <div id="slider-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-[0.2em] pointer-events-none select-none transition-opacity">

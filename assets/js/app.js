@@ -15,6 +15,7 @@ const SELECTORS = {
     modelBadge: '#model-badge',
     btnDownload: '#btn-download',
     btnReset: '#btn-reset',
+    modelSelect: '#model-select',
     themeToggle: '#theme-toggle',
     themeIcon: '#theme-toggle-icon',
     loginOverlay: '#login-overlay',
@@ -202,10 +203,11 @@ async function generateImage() {
     
     try {
         const password = getAuth();
+        const model = document.querySelector(SELECTORS.modelSelect).value;
         const res = await fetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt, api_key: password })
+            body: JSON.stringify({ prompt, api_key: password, model })
         });
 
         const data = await res.json();
