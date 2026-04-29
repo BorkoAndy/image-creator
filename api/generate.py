@@ -50,6 +50,11 @@ class handler(BaseHTTPRequestHandler):
             return self._error(400, "Prompt too long (max 500 characters)")
 
         # Try Hugging Face first (testing fallback), then Cloudflare
+        image_base64 = None
+        model_used = None
+        error_cf = None
+        error_hf = None
+
         try:
             image_base64 = run_async(huggingface.generate(prompt))
             model_used = "huggingface"
