@@ -57,15 +57,12 @@ class handler(BaseHTTPRequestHandler):
 
         # Model mapping: (platform, model_id, provider)
         MODEL_MAP = {
-            "cf-flux": ("cloudflare", "@cf/black-forest-labs/flux-1-schnell", None),
+            "cloudflare": ("cloudflare", "@cf/bytedance/stable-diffusion-xl-lightning", None),
             "cf-phoenix": ("cloudflare", "@cf/leonardo/phoenix-1.0", None),
-            "hf-flux": ("huggingface", "black-forest-labs/FLUX.1-schnell", "hf-inference"),
-            "hf-sdxl": ("huggingface", "stabilityai/sdxl-turbo", "hf-inference"),
             "hf-flux-pro": ("huggingface", "black-forest-labs/FLUX.1-dev", "fal-ai"),
-            "hf-sdxl-pro": ("huggingface", "stabilityai/stable-diffusion-xl-base-1.0", "fal-ai"),
         }
 
-        # Logic for "Auto" (Fallback)
+        # Logic for "Auto" (Fallback: CF SDXL -> HF FLUX Pro)
         if requested_model == "auto":
             try:
                 image_base64 = run_async(cloudflare.generate(prompt))
@@ -75,8 +72,9 @@ class handler(BaseHTTPRequestHandler):
 
             if image_base64 is None:
                 try:
-                    image_base64 = run_async(huggingface.generate(prompt))
-                    model_used = "huggingface"
+                    # Fallback to the high-quality FLUX Pro
+                    image_base64 = run_async(huggingface.generate(prompt, model_id="black-forest-labs/FLUX.1-dev", provider="fal-ai"))
+                    model_used = "huggingface (flux-pro)"
                 except Exception as e:
                     error_hf = str(e)
         
@@ -87,14 +85,6 @@ class handler(BaseHTTPRequestHandler):
                 model_used = "cloudflare"
             except Exception as e:
                 error_cf = str(e)
-        
-        # Logic for specific Hugging Face platform default
-        elif requested_model == "huggingface":
-            try:
-                image_base64 = run_async(huggingface.generate(prompt))
-                model_used = "huggingface"
-            except Exception as e:
-                error_hf = str(e)
 
         # Logic for specific mapped models
         elif requested_model in MODEL_MAP:
@@ -104,7 +94,6 @@ class handler(BaseHTTPRequestHandler):
                     image_base64 = run_async(cloudflare.generate(prompt, model_id))
                     model_used = f"cloudflare ({requested_model})"
                 else:
-                    # Pass the provider if specified in the map
                     kwargs = {"model_id": model_id}
                     if provider: kwargs["provider"] = provider
                     image_base64 = run_async(huggingface.generate(prompt, **kwargs))
