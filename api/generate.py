@@ -61,8 +61,8 @@ class handler(BaseHTTPRequestHandler):
             "cf-phoenix": ("cloudflare", "@cf/leonardo/phoenix-1.0", None),
             "hf-flux": ("huggingface", "black-forest-labs/FLUX.1-schnell", "hf-inference"),
             "hf-sdxl": ("huggingface", "stabilityai/sdxl-turbo", "hf-inference"),
-            "hf-sd15": ("huggingface", "runwayml/stable-diffusion-v1-5", "hf-inference"),
-            "hf-ernie": ("huggingface", "baidu/ERNIE-Image", "fal-ai"),
+            "hf-flux-pro": ("huggingface", "black-forest-labs/FLUX.1-dev", "fal-ai"),
+            "hf-sdxl-pro": ("huggingface", "stabilityai/stable-diffusion-xl-base-1.0", "fal-ai"),
         }
 
         # Logic for "Auto" (Fallback)
