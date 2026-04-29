@@ -55,13 +55,14 @@ class handler(BaseHTTPRequestHandler):
         error_cf = None
         error_hf = None
 
-        # Model mapping for specific testing
+        # Model mapping: (platform, model_id, provider)
         MODEL_MAP = {
-            "cf-flux": ("cloudflare", "@cf/black-forest-labs/flux-1-schnell"),
-            "cf-phoenix": ("cloudflare", "@cf/leonardo/phoenix-1.0"),
-            "hf-flux": ("huggingface", "black-forest-labs/FLUX.1-schnell"),
-            "hf-sdxl": ("huggingface", "stabilityai/sdxl-turbo"),
-            "hf-sd15": ("huggingface", "runwayml/stable-diffusion-v1-5"),
+            "cf-flux": ("cloudflare", "@cf/black-forest-labs/flux-1-schnell", None),
+            "cf-phoenix": ("cloudflare", "@cf/leonardo/phoenix-1.0", None),
+            "hf-flux": ("huggingface", "black-forest-labs/FLUX.1-schnell", "hf-inference"),
+            "hf-sdxl": ("huggingface", "stabilityai/sdxl-turbo", "hf-inference"),
+            "hf-sd15": ("huggingface", "runwayml/stable-diffusion-v1-5", "hf-inference"),
+            "hf-ernie": ("huggingface", "baidu/ERNIE-Image", "fal-ai"),
         }
 
         # Logic for "Auto" (Fallback)
@@ -97,14 +98,17 @@ class handler(BaseHTTPRequestHandler):
 
         # Logic for specific mapped models
         elif requested_model in MODEL_MAP:
-            platform, model_id = MODEL_MAP[requested_model]
+            platform, model_id, provider = MODEL_MAP[requested_model]
             try:
                 if platform == "cloudflare":
                     image_base64 = run_async(cloudflare.generate(prompt, model_id))
                     model_used = f"cloudflare ({requested_model})"
                 else:
-                    image_base64 = run_async(huggingface.generate(prompt, model_id))
-                    model_used = f"huggingface ({requested_model})"
+                    # Pass the provider if specified in the map
+                    kwargs = {"model_id": model_id}
+                    if provider: kwargs["provider"] = provider
+                    image_base64 = run_async(huggingface.generate(prompt, **kwargs))
+                    model_used = f"huggingface ({requested_model} via {provider})"
             except Exception as e:
                 if platform == "cloudflare": error_cf = str(e)
                 else: error_hf = str(e)
