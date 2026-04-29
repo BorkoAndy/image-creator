@@ -2,6 +2,7 @@ import httpx
 import base64
 import os
 import time
+import asyncio
 
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
 
@@ -44,7 +45,7 @@ async def generate(prompt: str, model_id: str = None) -> str:
         "inputs": prompt,
         "options": {
             "wait_for_model": True,
-            "use_cache": False,
+            "use_cache": True,
         },
         "parameters": {
             "num_inference_steps": steps,
@@ -60,16 +61,22 @@ async def generate(prompt: str, model_id: str = None) -> str:
             # Model still loading — wait and retry
             if response.status_code == 503:
                 try:
-                    estimated = response.json().get("estimated_time", POLL_INTERVAL)
+                    data = response.json()
+                    estimated = data.get("estimated_time", POLL_INTERVAL)
                 except:
                     estimated = POLL_INTERVAL
                 wait = min(float(estimated), POLL_INTERVAL)
-                time.sleep(wait)
+                await asyncio.sleep(wait)
                 elapsed += wait
                 continue
 
             if response.status_code != 200:
-                raise Exception(f"Hugging Face API error {response.status_code}: {response.text}")
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get("error", response.text)
+                except:
+                    error_msg = response.text
+                raise Exception(f"Hugging Face API error {response.status_code}: {error_msg}")
 
             image_bytes = response.content
             if not image_bytes:
