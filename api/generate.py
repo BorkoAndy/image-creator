@@ -59,8 +59,9 @@ class handler(BaseHTTPRequestHandler):
         MODEL_MAP = {
             "cf-flux": ("cloudflare", "@cf/black-forest-labs/flux-1-schnell"),
             "cf-phoenix": ("cloudflare", "@cf/leonardo/phoenix-1.0"),
-            "hf-sd3": ("huggingface", "stabilityai/stable-diffusion-3.5-large-turbo"),
-            "hf-dreamshaper": ("huggingface", "Lykon/dreamshaper-xl-v2-turbo"),
+            "hf-flux": ("huggingface", "black-forest-labs/FLUX.1-schnell"),
+            "hf-sdxl": ("huggingface", "stabilityai/sdxl-turbo"),
+            "hf-sd15": ("huggingface", "runwayml/stable-diffusion-v1-5"),
         }
 
         # Logic for "Auto" (Fallback)

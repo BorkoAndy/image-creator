@@ -6,9 +6,9 @@ import asyncio
 
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
 
-# Model: SDXL — best free quality on HF
-HF_MODEL = "stabilityai/stable-diffusion-xl-base-1.0"
-HF_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
+# Model: SDXL Turbo — fast and currently supported on free Inference API
+HF_MODEL = "stabilityai/sdxl-turbo"
+
 
 # Max wait time for model to load (HF sometimes cold-starts)
 MAX_WAIT_SECONDS = 60
