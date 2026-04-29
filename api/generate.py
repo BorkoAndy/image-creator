@@ -55,6 +55,14 @@ class handler(BaseHTTPRequestHandler):
         error_cf = None
         error_hf = None
 
+        # Model mapping for specific testing
+        MODEL_MAP = {
+            "cf-flux": ("cloudflare", "@cf/black-forest-labs/flux-1-schnell"),
+            "cf-phoenix": ("cloudflare", "@cf/leonardo/phoenix-1.0"),
+            "hf-sd3": ("huggingface", "stabilityai/stable-diffusion-3.5-large-turbo"),
+            "hf-dreamshaper": ("huggingface", "Lykon/dreamshaper-xl-v2-turbo"),
+        }
+
         # Logic for "Auto" (Fallback)
         if requested_model == "auto":
             try:
@@ -70,7 +78,7 @@ class handler(BaseHTTPRequestHandler):
                 except Exception as e:
                     error_hf = str(e)
         
-        # Logic for specific Cloudflare request
+        # Logic for specific Cloudflare platform default
         elif requested_model == "cloudflare":
             try:
                 image_base64 = run_async(cloudflare.generate(prompt))
@@ -78,13 +86,27 @@ class handler(BaseHTTPRequestHandler):
             except Exception as e:
                 error_cf = str(e)
         
-        # Logic for specific Hugging Face request
+        # Logic for specific Hugging Face platform default
         elif requested_model == "huggingface":
             try:
                 image_base64 = run_async(huggingface.generate(prompt))
                 model_used = "huggingface"
             except Exception as e:
                 error_hf = str(e)
+
+        # Logic for specific mapped models
+        elif requested_model in MODEL_MAP:
+            platform, model_id = MODEL_MAP[requested_model]
+            try:
+                if platform == "cloudflare":
+                    image_base64 = run_async(cloudflare.generate(prompt, model_id))
+                    model_used = f"cloudflare ({requested_model})"
+                else:
+                    image_base64 = run_async(huggingface.generate(prompt, model_id))
+                    model_used = f"huggingface ({requested_model})"
+            except Exception as e:
+                if platform == "cloudflare": error_cf = str(e)
+                else: error_hf = str(e)
 
         if image_base64 is None:
             err_details = {

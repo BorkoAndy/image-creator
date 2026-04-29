@@ -13,7 +13,7 @@ HF_URL = f"https://api-inference.huggingface.co/models/{HF_MODEL}"
 MAX_WAIT_SECONDS = 60
 POLL_INTERVAL = 5
 
-async def generate(prompt: str) -> str:
+async def generate(prompt: str, model_id: str = None) -> str:
     """
     Generate image via Hugging Face Inference API.
     Handles model loading/queued states automatically.
@@ -23,31 +23,46 @@ async def generate(prompt: str) -> str:
     if not HF_API_TOKEN:
         raise Exception("Hugging Face API token not configured")
 
+    target_model = model_id if model_id else HF_MODEL
+    url = f"https://api-inference.huggingface.co/models/{target_model}"
+
     headers = {
         "Authorization": f"Bearer {HF_API_TOKEN}",
         "Content-Type": "application/json",
     }
 
+    # Default parameters
+    steps = 25
+    guidance = 7.5
+    
+    # Adjust for fast models
+    if any(m in target_model.lower() for m in ["turbo", "schnell", "lightning"]):
+        steps = 4
+        guidance = 0.0 if "schnell" in target_model.lower() else 1.5
+
     payload = {
         "inputs": prompt,
         "options": {
-            "wait_for_model": True,  # wait instead of returning 503
+            "wait_for_model": True,
             "use_cache": False,
         },
         "parameters": {
-            "num_inference_steps": 25,
-            "guidance_scale": 7.5,
+            "num_inference_steps": steps,
+            "guidance_scale": guidance,
         }
     }
 
     elapsed = 0
     async with httpx.AsyncClient(timeout=120.0) as client:
         while elapsed < MAX_WAIT_SECONDS:
-            response = await client.post(HF_URL, headers=headers, json=payload)
+            response = await client.post(url, headers=headers, json=payload)
 
             # Model still loading — wait and retry
             if response.status_code == 503:
-                estimated = response.json().get("estimated_time", POLL_INTERVAL)
+                try:
+                    estimated = response.json().get("estimated_time", POLL_INTERVAL)
+                except:
+                    estimated = POLL_INTERVAL
                 wait = min(float(estimated), POLL_INTERVAL)
                 time.sleep(wait)
                 elapsed += wait

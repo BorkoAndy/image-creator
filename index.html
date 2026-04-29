@@ -116,8 +116,16 @@
                         <select id="model-select" 
                                 class="w-full p-6 rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 focus:ring-4 focus:ring-lime-500/20 focus:border-lime-500/50 outline-none transition-all text-sm font-mono appearance-none cursor-pointer">
                             <option value="auto">Auto (Smart Fallback)</option>
-                            <option value="cloudflare">Cloudflare SDXL Lightning</option>
-                            <option value="huggingface">Hugging Face SDXL Base</option>
+                            <optgroup label="Cloudflare Workers AI">
+                                <option value="cloudflare">SDXL Lightning (Default)</option>
+                                <option value="cf-flux">FLUX.1 Schnell (High Quality)</option>
+                                <option value="cf-phoenix">Leonardo Phoenix (Artistic)</option>
+                            </optgroup>
+                            <optgroup label="Hugging Face API">
+                                <option value="huggingface">SDXL Base (Default)</option>
+                                <option value="hf-sd3">Stable Diffusion 3.5 Turbo</option>
+                                <option value="hf-dreamshaper">DreamShaper XL (Turbo)</option>
+                            </optgroup>
                         </select>
                     </div>
 

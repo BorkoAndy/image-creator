@@ -8,7 +8,7 @@ CLOUDFLARE_API_TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN")
 # Model: SDXL Lightning — fast, free, good quality
 CF_MODEL = "@cf/bytedance/stable-diffusion-xl-lightning"
 
-async def generate(prompt: str) -> str:
+async def generate(prompt: str, model_id: str = None) -> str:
     """
     Generate image via Cloudflare Workers AI.
     Returns base64-encoded PNG string.
@@ -17,7 +17,8 @@ async def generate(prompt: str) -> str:
     if not CLOUDFLARE_ACCOUNT_ID or not CLOUDFLARE_API_TOKEN:
         raise Exception("Cloudflare credentials not configured")
 
-    url = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/{CF_MODEL}"
+    target_model = model_id if model_id else CF_MODEL
+    url = f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/run/{target_model}"
 
     headers = {
         "Authorization": f"Bearer {CLOUDFLARE_API_TOKEN}",
@@ -26,8 +27,11 @@ async def generate(prompt: str) -> str:
 
     payload = {
         "prompt": prompt,
-        "num_steps": 4,  # Lightning model works best with 4 steps
     }
+    
+    # Add num_steps only for the lightning model to avoid issues with others
+    if "lightning" in target_model:
+        payload["num_steps"] = 4
 
     async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.post(url, headers=headers, json=payload)
